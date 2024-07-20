@@ -11,18 +11,26 @@ import { defaultContact } from '../defaultContact'
 
 export default function Comments(props: { post: Post }) {
     const [commentContent, setCommentContent] = useState<string>('')
-    const [displayedComments, setDisplayedComments] = useState<number>(3)
+    const [displayedComments, setDisplayedComments] = useState<{
+        number: number
+        bool: boolean
+    }>({
+        number: 3,
+        bool: false,
+    })
     const { post } = props
 
-    let buttonText: 'Show More' | 'Show Less' = 'Show More'
-
     const toggleMoreComments = () => {
-        if (displayedComments === 3) {
-            setDisplayedComments(post.comments.length)
-            buttonText = 'Show Less'
+        if (displayedComments.number === 3) {
+            setDisplayedComments({
+                number: post.comments.length,
+                bool: true,
+            })
         } else {
-            setDisplayedComments(3)
-            buttonText = 'Show More'
+            setDisplayedComments({
+                number: 3,
+                bool: false,
+            })
         }
     }
 
@@ -41,14 +49,14 @@ export default function Comments(props: { post: Post }) {
 
     return (
         <div className='flex flex-col gap-4'>
-            {post.comments.slice(0, displayedComments).map((comment) => (
+            {post.comments.slice(0, displayedComments.number).map((comment) => (
                 <CommentsItem key={comment.id} comment={comment} />
             ))}
             <button
                 onClick={toggleMoreComments}
                 className='btn bg-base-300 w-32'
             >
-                {buttonText}
+                {displayedComments.bool ? 'Show Less' : 'Show More'}
             </button>
             <AddComment
                 post={post}
@@ -73,10 +81,10 @@ function CommentsItem(props: { comment: Comment }) {
     }, [contacts, comment.contactId])
 
     return (
-        <li key={comment.id}>
-            {`${commentAuthor.firstName} ${commentAuthor.lastName}`} {'->'}{' '}
+        <p key={comment.id}>
+            {`>${commentAuthor.firstName} ${commentAuthor.lastName}`} {'says:'}{' '}
             {comment.content}
-        </li>
+        </p>
     )
 }
 
@@ -96,10 +104,10 @@ function AddComment(props: {
             content: content,
         }
 
-        let updatedComments: [...Comment[], Comment]
+        let updatedComments: [Comment, ...Comment[]]
 
         if (post.comments) {
-            updatedComments = [...post.comments, newComment]
+            updatedComments = [newComment, ...post.comments]
         } else {
             updatedComments = [newComment]
         }
